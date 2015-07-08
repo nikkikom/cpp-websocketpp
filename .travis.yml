@@ -2,7 +2,20 @@ language: cpp
 compiler:
   - gcc
 before_install:
- - sudo apt-get install libboost-chrono1.48-dev libboost-regex1.48-dev libboost-system1.48-dev libboost-thread1.48-dev libboost-test1.48-dev libboost-random1.48-dev -y
+ - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+ - sudo apt-get -qq update
+ - sudo apt-get -qq install -y gcc-4.7 g++-4.7 g++-4.7-multilib build-essential libicu-dev
+ - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 99 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
+ - sudo update-alternatives --auto gcc
+ - mkdir Downloads
+ - cd Downloads
+ - wget -O boost_1_58_0.tar.gz http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.gz/download
+ - tar xzf boost_1_58_0.tar.gz
+ - cd boost_1_58_0/
+ - sudo bash bootstrap.sh --prefix=/usr --with-libraries=system,chrono,thread,regex,date_time,atomic,thread,test,random,coroutine
+ - sudo ./b2 variant=release link=static threading=multi runtime-link=shared -j 4 -d0 install
+ - sudo ldconfig
+ - cd ../..
 env:
   global:
     - BOOST_INCLUDES=/usr/include
@@ -10,14 +23,10 @@ env:
 script: scons -j 2 && scons test
 branches:
   only:
-    - master
-    - permessage-deflate
-    - experimental
-    - 0.3.x-cmake
-    - develop
+    - nikki/travis
 notifications:
   recipients:
-    - travis@zaphoyd.com
+    - nikkikom@gmail.com
   email:
     on_success: change
     on_failure: always
